@@ -131,6 +131,7 @@ buildTree (MainOptions {
         handleFile
       where
         handleFile
+          -- the return type of this function is 'IO a' to allow it to expand later and do IO as well, if necessary
           | isFileAllowed file = return $ return $ File file ()
           | otherwise          = return Nothing
         handleDirectory
@@ -154,8 +155,17 @@ buildTree (MainOptions {
         isDirAllowed = isAllowed
 
 
+plur :: Int -> String
+plur i
+  | i < 2     = ""
+  | otherwise = "s"
+
+
 main :: IO ()
 main = runCommand main'
   where
     main' :: MainOptions -> [FilePath] -> IO ()
-    main' opts paths = scanDir opts paths >>= print
+    main' opts paths = do
+      res@(CalcResult { lineCount = lk, fileCount = fk }) <- scanDir opts paths
+      putStrLn $ "Counted " ++ show lk ++ " line" ++ plur lk
+      putStrLn $ "In " ++ show fk ++ " file" ++ plur fk
