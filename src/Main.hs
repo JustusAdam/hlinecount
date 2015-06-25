@@ -28,7 +28,9 @@ defaultFiles =
   ]
 
 
-data CalcResult = CalcResult { lineCount :: Int } deriving (Eq, Show)
+data CalcResult = CalcResult { lineCount :: Int
+                             , fileCount :: Int
+                             } deriving (Eq, Show)
 
 
 data MainOptions = MainOptions { recursive        :: Bool
@@ -49,7 +51,7 @@ instance Foldable DirTree where
   foldMap f (Directory _ cont) = foldMap (foldMap f) cont
 
   foldr f b (File _ value) = f value b
-  foldr f b (Directory _ contents) = foldr (\a b -> foldr f b a) b contents
+  foldr f b (Directory _ contents) = foldr (flip $ foldr f) b contents
 
 
 instance Options MainOptions where
@@ -83,9 +85,6 @@ instance Options MainOptions where
                    })
 
 
-ts a = traceShow a a
-
-
 add :: CalcResult -> CalcResult -> CalcResult
 add (CalcResult { lineCount = c1count }) c2 = c2 { lineCount = c1count }
 
@@ -98,14 +97,9 @@ scanDir opts@(MainOptions {
               ignoreHidden = hidden
               }) paths = do
   print paths
-  trees <- mapM (buildTree opts) paths
-  putStrLn "Found"
-  putStrLn ""
-  print trees
-  putStrLn ""
-  measured <- mapM measureTree $ catMaybes trees
-  print measured
-  return $ CalcResult $ sum $ map sum measured
+  trees <- catMaybes <$> mapM (buildTree opts) paths
+  measured <- mapM measureTree trees
+  return $ CalcResult (sum $ map sum measured) (sum $ map (foldl (const . (+ 1)) 0) trees)
 
 
 measureTree :: DirTree a -> IO (DirTree Int)
@@ -115,7 +109,7 @@ measureTree (File name _) =
   where
     lineCount     = length . nonEmptyLines
     nonEmptyLines = filter (not . isOnlyWhite) . lines
-    isOnlyWhite   = null . filter (not . isSpace)
+    isOnlyWhite   = not . any (not . isSpace)
     isSpace       = (==) ' '
 
 
@@ -138,8 +132,12 @@ buildTree (MainOptions {
           | otherwise          = return Nothing
         handleDirectory
           | recursive =
-            (return . Directory file . catMaybes) <$> (filter isAllowed <$> getDirectoryContents file >>= mapM buildTree' . map (file </>))
+            (return . Directory file . catMaybes) <$> subtrees
           | otherwise = return Nothing
+          where
+            allowedSubNodes = filter isAllowed <$> getDirectoryContents file
+            subtrees = allowedSubNodes >>= mapM (buildTree' . (file </>))
+
 
         isAllowed = not . notAllowed
           where
