@@ -4,13 +4,12 @@ import           Data.Bool        (bool)
 import           Data.Composition
 import           Data.List
 import           Data.Maybe       (catMaybes)
-import           Debug.Trace
 import           Options
 import           System.Directory
 import           System.FilePath
-import System.IO
-import Control.Monad (void)
-import Data.Foldable
+import           System.IO
+import           Control.Monad    (void)
+import           Data.Foldable
 
 
 recursiveDefault :: Bool
@@ -96,10 +95,14 @@ scanDir opts@(MainOptions {
               ignorePaths = ign,
               ignoreHidden = hidden
               }) paths = do
-  print paths
-  trees <- catMaybes <$> mapM (buildTree opts) paths
+  trees    <- catMaybes <$> mapM (buildTree opts) paths
   measured <- mapM measureTree trees
-  return $ CalcResult (sum $ map sum measured) (sum $ map (foldl (const . (+ 1)) 0) trees)
+  return (
+    let
+      linecount = sum $ map sum measured
+      filecount = sum $ map (foldl (const . (+ 1)) 0) trees
+    in
+      CalcResult  linecount filecount)
 
 
 measureTree :: DirTree a -> IO (DirTree Int)
