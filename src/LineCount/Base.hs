@@ -1,6 +1,7 @@
 module LineCount.Base
     ( DirTree(..)
     , CalcResult(..)
+    , MainOptions(..)
     ) where
 
 import Data.Foldable
@@ -16,6 +17,15 @@ data DirTree a
   = File String a
   | Directory String [DirTree a]
   deriving (Eq, Show)
+
+
+data MainOptions = MainOptions { recursive         :: Bool
+                               , ignorePaths       :: [FilePath]
+                               , targetExtensions  :: [String]
+                               , ignoreHidden      :: Bool
+                               , selProfiles       :: [String]
+                               , commentDelimiters :: [String]
+                               } deriving (Eq, Show)
 
 
 instance Foldable DirTree where

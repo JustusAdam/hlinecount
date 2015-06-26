@@ -8,7 +8,7 @@ import           Options
 import           System.Directory
 import           System.FilePath
 import           System.IO
-import           Control.Monad    (void)
+import           Control.Monad
 import           Data.Foldable
 import           LineCount
 import           LineCount.Profile as P
@@ -24,20 +24,7 @@ ignoredDefaultPaths =
   , "Setup.hs"
   ]
 defaultFiles :: [String]
-defaultFiles =
-  [ ".hs"
-  , ".lhs"
-  ]
-
-
-data MainOptions = MainOptions { recursive        :: Bool
-                               , ignorePaths      :: [FilePath]
-                               , targetExtensions :: [String]
-                               , ignoreHidden     :: Bool
-                               , selProfiles      :: [String]
-                               } deriving (Eq, Show)
-
-
+defaultFiles = []
 
 
 instance Options MainOptions where
@@ -58,15 +45,15 @@ instance Options MainOptions where
                    })
     <*> defineOption
           (optionType_list ',' optionType_string)
-          (\o -> o { optionShortFlags = "f"
-                   , optionLongFlags = ["files"]
+          (\o -> o { optionShortFlags  = "f"
+                   , optionLongFlags   = ["files"]
                    , optionDescription = "Fileextensions to include in the search."
-                   , optionDefault = defaultFiles
+                   , optionDefault     = defaultFiles
                    })
     <*> defineOption
           optionType_bool
-          (\o -> o { optionLongFlags = ["ignore-hidden"]
-                   , optionDefault = True
+          (\o -> o { optionLongFlags   = ["ignore-hidden"]
+                   , optionDefault     = True
                    , optionDescription = "Ignore hidden files."
                    })
     <*> defineOption
@@ -76,77 +63,25 @@ instance Options MainOptions where
                    , optionDescription = "Choose a predefined profile"
                    , optionLongFlags   = ["profile"]
                    })
+    <*> defineOption
+          (optionType_list ',' optionType_string)
+          (\o -> o { optionLongFlags   = ["comment"]
+                   , optionShortFlags  = "c"
+                   , optionDescription = "Specify comment delimiters"
+                   , optionDefault     = []
+                   })
 
 
 add :: CalcResult -> CalcResult -> CalcResult
 add (CalcResult { lineCount = c1count }) c2 = c2 { lineCount = c1count }
 
 
-scanDir :: MainOptions -> [FilePath] -> IO CalcResult
-scanDir opts@(MainOptions {
-              targetExtensions = exts,
-              recursive = recursive,
-              ignorePaths = ign,
-              ignoreHidden = hidden
-              }) paths = do
-  trees    <- catMaybes <$> mapM (buildTree opts) paths
-  measured <- mapM measureTree trees
-  return (
-    let
-      linecount = sum $ map sum measured
-      filecount = sum $ map (foldl (const . (+ 1)) 0) trees
-    in
-      CalcResult  linecount filecount)
-
-
-measureTree :: DirTree a -> IO (DirTree Int)
-measureTree (Directory name contents) = Directory name <$> mapM measureTree contents
-measureTree (File name _) =
-  File name . lineCount <$> readFile name
-  where
-    lineCount     = length . nonEmptyLines
-    nonEmptyLines = filter (not . isOnlyWhite) . lines
-    isOnlyWhite   = not . any (not . isSpace)
-    isSpace       = (==) ' '
-
-
-buildTree :: MainOptions -> FilePath -> IO (Maybe (DirTree ()))
-buildTree (MainOptions {
-              targetExtensions = exts,
-              recursive = recursive,
-              ignorePaths = ign,
-              ignoreHidden = hidden
-              }) = buildTree'
-  where
-    buildTree' file =
-      doesFileExist file >>=
-      bool
-        (doesDirectoryExist file >>= bool (return Nothing) handleDirectory)
-        handleFile
-      where
-        handleFile
-          -- the return type of this function is 'IO a' to allow it to expand later and do IO as well, if necessary
-          | isFileAllowed file = return $ return $ File file ()
-          | otherwise          = return Nothing
-        handleDirectory
-          | recursive =
-            (return . Directory file . catMaybes) <$> subtrees
-          | otherwise = return Nothing
-          where
-            allowedSubNodes = filter isAllowed <$> getDirectoryContents file
-            subtrees = allowedSubNodes >>= mapM (buildTree' . (file </>))
-
-
-        isAllowed = not . notAllowed
-          where
-            notAllowed
-              | hidden    = (||) <$> isIgnored <*> isPrefixOf "." . takeFileName
-              | otherwise = (||) <$> isIgnored <*> flip elem [".", ".."]
-              where
-                isIgnored = or . sequenceA (map isSubsequenceOf ign)
-
-        isFileAllowed = (&&) <$> isAllowed <*> flip elem exts . takeExtension
-        isDirAllowed = isAllowed
+integrateProfile :: MainOptions -> Profile -> MainOptions
+integrateProfile
+  m@(MainOptions { targetExtensions = t })
+  p@(Profile { fileExtensions = fex })
+  =
+  m { targetExtensions = t `union` fex }
 
 
 plur :: Int -> String
@@ -160,7 +95,9 @@ main = runCommand main'
   where
     main' :: MainOptions -> [FilePath] -> IO ()
     main' opts paths = do
-      let profile = mapMaybe (`Map.lookup` profiles) $ selProfiles opts
-      res@(CalcResult { lineCount = lk, fileCount = fk }) <- scanDir opts paths
+      let chosenProfiles = mapMaybe (`Map.lookup` profiles) $ selProfiles opts
+      let newOpts = integrateProfile opts $ mconcat chosenProfiles
+      res@(CalcResult { lineCount = lk, fileCount = fk }) <- scanDir newOpts paths
+      print newOpts
       putStrLn $ "Counted " ++ show lk ++ " line" ++ plur lk
       putStrLn $ "In " ++ show fk ++ " file" ++ plur fk
