@@ -3,13 +3,16 @@ module Main where
 import           Data.Bool        (bool)
 import           Data.Composition
 import           Data.List
-import           Data.Maybe       (catMaybes)
+import           Data.Maybe
 import           Options
 import           System.Directory
 import           System.FilePath
 import           System.IO
 import           Control.Monad    (void)
 import           Data.Foldable
+import           LineCount
+import           LineCount.Profile as P
+import qualified Data.Map         as Map
 
 
 recursiveDefault :: Bool
@@ -27,30 +30,14 @@ defaultFiles =
   ]
 
 
-data CalcResult = CalcResult { lineCount :: Int
-                             , fileCount :: Int
-                             } deriving (Eq, Show)
-
-
 data MainOptions = MainOptions { recursive        :: Bool
                                , ignorePaths      :: [FilePath]
                                , targetExtensions :: [String]
                                , ignoreHidden     :: Bool
+                               , selProfiles      :: [String]
                                } deriving (Eq, Show)
 
 
-data DirTree a
-  = File String a
-  | Directory String [DirTree a]
-  deriving (Eq, Show)
-
-
-instance Foldable DirTree where
-  foldMap f (File _ n) = f n
-  foldMap f (Directory _ cont) = foldMap (foldMap f) cont
-
-  foldr f b (File _ value) = f value b
-  foldr f b (Directory _ contents) = foldr (flip $ foldr f) b contents
 
 
 instance Options MainOptions where
@@ -81,6 +68,13 @@ instance Options MainOptions where
           (\o -> o { optionLongFlags = ["ignore-hidden"]
                    , optionDefault = True
                    , optionDescription = "Ignore hidden files."
+                   })
+    <*> defineOption
+          (optionType_list ',' optionType_string)
+          (\o -> o { optionShortFlags  = "p"
+                   , optionDefault     = []
+                   , optionDescription = "Choose a predefined profile"
+                   , optionLongFlags   = ["profile"]
                    })
 
 
@@ -166,6 +160,7 @@ main = runCommand main'
   where
     main' :: MainOptions -> [FilePath] -> IO ()
     main' opts paths = do
+      let profile = mapMaybe (`Map.lookup` profiles) $ selProfiles opts
       res@(CalcResult { lineCount = lk, fileCount = fk }) <- scanDir opts paths
       putStrLn $ "Counted " ++ show lk ++ " line" ++ plur lk
       putStrLn $ "In " ++ show fk ++ " file" ++ plur fk
