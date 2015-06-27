@@ -79,4 +79,5 @@ __all =
   , profileCsharp
   , profileFsharp
   , profileJava
+  , profileElm
   ]

@@ -1,15 +1,8 @@
 module Main where
 
-import           Data.Bool         (bool)
-import           Data.Composition
 import           Data.List
 import           Data.Maybe
 import           Options
-import           System.Directory
-import           System.FilePath
-import           System.IO
-import           Control.Monad
-import           Data.Foldable
 import           LineCount
 import           LineCount.Profile as P
 import qualified Data.Map          as Map
@@ -79,7 +72,7 @@ instance Options MainOptions where
 integrateProfile :: MainOptions -> Profile -> MainOptions
 integrateProfile
   m@(MainOptions { targetExtensions = t })
-  p@(Profile { fileExtensions = fex })
+  (Profile { fileExtensions = fex })
   =
   m { targetExtensions = t `union` fex }
 
@@ -97,7 +90,7 @@ main = runCommand main'
     main' opts paths = do
       let chosenProfiles = mapMaybe (flip Map.lookup profiles . map toLower) $ selProfiles opts
       let newOpts = integrateProfile opts $ mconcat chosenProfiles
-      res@(CalcResult { lineCount = lk, fileCount = fk }) <- scanDir newOpts paths
+      (CalcResult { lineCount = lk, fileCount = fk }) <- scanDir newOpts paths
       print newOpts
       putStrLn $ "Counted " ++ show lk ++ " line" ++ plur lk
       putStrLn $ "In " ++ show fk ++ " file" ++ plur fk

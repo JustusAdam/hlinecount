@@ -4,8 +4,6 @@ module LineCount.Base
     , MainOptions(..)
     ) where
 
-import Data.Foldable
-
 
 data CalcResult = CalcResult { lineCount :: Int
                              , fileCount :: Int

@@ -18,12 +18,13 @@ import           Data.Char
 
 
 buildTree :: MainOptions -> FilePath -> IO (Maybe (DirTree ()))
-buildTree (MainOptions {
-              targetExtensions = exts,
-              recursive = recursive,
-              ignorePaths = ign,
-              ignoreHidden = hidden
-              }) = buildTree'
+buildTree
+  (MainOptions
+    { targetExtensions = exts
+    , recursive = rec
+    , ignorePaths = ign
+    , ignoreHidden = hidden
+    }) = buildTree'
   where
     buildTree' file =
       doesFileExist file >>=
@@ -36,7 +37,7 @@ buildTree (MainOptions {
           | isFileAllowed file = return $ return $ File file ()
           | otherwise          = return Nothing
         handleDirectory
-          | recursive =
+          | rec       =
             (return . Directory file . catMaybes) <$> subtrees
           | otherwise = return Nothing
           where
@@ -53,16 +54,10 @@ buildTree (MainOptions {
                 isIgnored = or . sequenceA (map isSubsequenceOf ign)
 
         isFileAllowed = (&&) <$> isAllowed <*> flip elem exts . takeExtension
-        isDirAllowed = isAllowed
 
 
 scanDir :: MainOptions -> [FilePath] -> IO CalcResult
-scanDir opts@(MainOptions {
-              targetExtensions = exts,
-              recursive = recursive,
-              ignorePaths = ign,
-              ignoreHidden = hidden
-              }) paths = do
+scanDir opts paths = do
   trees    <- catMaybes <$> mapM (buildTree opts) paths
   measured <- mapM measureTree trees
   return (
@@ -76,8 +71,8 @@ scanDir opts@(MainOptions {
 measureTree :: DirTree a -> IO (DirTree Int)
 measureTree (Directory name contents) = Directory name <$> mapM measureTree contents
 measureTree (File name _) =
-  File name . lineCount <$> readFile name
+  File name . countLines <$> readFile name
   where
-    lineCount     = length . nonEmptyLines
+    countLines    = length . nonEmptyLines
     nonEmptyLines = filter (not . isOnlyWhite) . lines
     isOnlyWhite   = not . any (not . isSpace)
