@@ -3,10 +3,10 @@ module LineCount.Profile.Base
     ) where
 
 
-data Profile = Profile { canonicalName :: String
-                       , fileExtensions   :: [FilePath]
-                       , commentDelimiter :: [String]
-                       , acceptedNames    :: [String]
+data Profile = Profile { canonicalName    :: String  -- ^ this name will be shown in the tooltip
+                       , fileExtensions   :: [FilePath]  -- ^ which files contain code of this language
+                       , commentDelimiter :: [String]  -- ^ what denotes a single-line comment in this language
+                       , acceptedNames    :: [String]  -- ^ under which names can this profile be found
                        } deriving (Show, Eq)
 
 
