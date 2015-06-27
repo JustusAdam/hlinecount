@@ -2,7 +2,7 @@ module LineCount.Profile.Prfs
     ( __all
     ) where
 
-import LineCount.Profile.Base
+import           LineCount.Profile.Base
 
 
 profileHaskell :: Profile

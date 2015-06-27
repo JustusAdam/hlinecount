@@ -10,7 +10,6 @@ data CalcResult = CalcResult { lineCount :: Int
                              } deriving (Eq, Show)
 
 
-
 data DirTree a
   = File String a
   | Directory String [DirTree a]

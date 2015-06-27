@@ -19,12 +19,12 @@ import           Data.Char
 
 buildTree :: MainOptions -> FilePath -> IO (Maybe (DirTree ()))
 buildTree
-  (MainOptions
-    { targetExtensions = exts
-    , recursive = rec
-    , ignorePaths = ign
-    , ignoreHidden = hidden
-    }) = buildTree'
+  (MainOptions { targetExtensions = exts
+               , recursive = rec
+               , ignorePaths = ign
+               , ignoreHidden = hidden
+               }
+  ) = buildTree'
   where
     buildTree' file =
       doesFileExist file >>=
@@ -65,7 +65,8 @@ scanDir opts paths = do
       linecount = sum $ map sum measured
       filecount = sum $ map (foldl (const . (+ 1)) 0) trees
     in
-      CalcResult  linecount filecount)
+      CalcResult  linecount filecount
+  )
 
 
 measureTree :: DirTree a -> IO (DirTree Int)
