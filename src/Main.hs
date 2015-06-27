@@ -13,6 +13,7 @@ import           Data.Foldable
 import           LineCount
 import           LineCount.Profile as P
 import qualified Data.Map          as Map
+import           Data.Char
 
 
 recursiveDefault :: Bool
@@ -62,8 +63,8 @@ instance Options MainOptions where
                    , optionDefault     = []
                    , optionDescription =
                      "Select predefined profiles\n\
-                     \    Available profiles are\n      "
-                     ++ intercalate "\n      - " P.providedProfiles
+                     \    Available profiles are:\n    "
+                     ++ intercalate ", " P.providedProfiles
                    , optionLongFlags   = ["profile"]
                    })
     <*> defineOption
@@ -94,7 +95,7 @@ main = runCommand main'
   where
     main' :: MainOptions -> [FilePath] -> IO ()
     main' opts paths = do
-      let chosenProfiles = mapMaybe (`Map.lookup` profiles) $ selProfiles opts
+      let chosenProfiles = mapMaybe (flip Map.lookup profiles . map toLower) $ selProfiles opts
       let newOpts = integrateProfile opts $ mconcat chosenProfiles
       res@(CalcResult { lineCount = lk, fileCount = fk }) <- scanDir newOpts paths
       print newOpts

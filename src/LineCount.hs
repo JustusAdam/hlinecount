@@ -14,6 +14,7 @@ import           Data.List
 import           System.Directory
 import           System.FilePath
 import           Data.Bool        (bool)
+import           Data.Char
 
 
 buildTree :: MainOptions -> FilePath -> IO (Maybe (DirTree ()))
@@ -80,4 +81,3 @@ measureTree (File name _) =
     lineCount     = length . nonEmptyLines
     nonEmptyLines = filter (not . isOnlyWhite) . lines
     isOnlyWhite   = not . any (not . isSpace)
-    isSpace       = (==) ' '
