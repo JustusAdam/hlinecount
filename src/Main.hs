@@ -1,6 +1,6 @@
 module Main where
 
-import           Data.Bool        (bool)
+import           Data.Bool         (bool)
 import           Data.Composition
 import           Data.List
 import           Data.Maybe
@@ -12,7 +12,7 @@ import           Control.Monad
 import           Data.Foldable
 import           LineCount
 import           LineCount.Profile as P
-import qualified Data.Map         as Map
+import qualified Data.Map          as Map
 
 
 recursiveDefault :: Bool
@@ -60,7 +60,10 @@ instance Options MainOptions where
           (optionType_list ',' optionType_string)
           (\o -> o { optionShortFlags  = "p"
                    , optionDefault     = []
-                   , optionDescription = "Choose a predefined profile"
+                   , optionDescription =
+                     "Select predefined profiles\n\
+                     \    Available profiles are\n      "
+                     ++ intercalate "\n      - " P.providedProfiles
                    , optionLongFlags   = ["profile"]
                    })
     <*> defineOption
@@ -70,10 +73,6 @@ instance Options MainOptions where
                    , optionDescription = "Specify comment delimiters"
                    , optionDefault     = []
                    })
-
-
-add :: CalcResult -> CalcResult -> CalcResult
-add (CalcResult { lineCount = c1count }) c2 = c2 { lineCount = c1count }
 
 
 integrateProfile :: MainOptions -> Profile -> MainOptions
