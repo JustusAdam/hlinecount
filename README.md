@@ -28,7 +28,13 @@ Current command line options:
         default: ".git/","build/","Setup.hs"
       -f, --files :: list<text>
         Fileextensions to include in the search.
-        default: ".hs",".lhs"
       --ignore-hidden :: bool
         Ignore hidden files.
         default: true
+      -p, --profile :: list<text>
+        Select predefined profiles
+        Available profiles are:
+        Haskell, Python,
+        C, C++, C#, F#, Java
+      -c, --comment :: list<text>
+        Specify comment delimiters
