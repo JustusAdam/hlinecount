@@ -15,12 +15,13 @@ import           System.Directory
 import           System.FilePath
 import           Data.Bool        (bool)
 import           Data.Char
+import           LineCount.Filter
 
 
 buildTree :: MainOptions -> FilePath -> IO (Maybe (DirTree ()))
 buildTree
   (MainOptions { targetExtensions = exts
-               , recursive = rec
+               , recursive = recu
                , ignorePaths = ign
                , ignoreHidden = hidden
                }
@@ -37,7 +38,7 @@ buildTree
           | isFileAllowed file = return $ return $ File file ()
           | otherwise          = return Nothing
         handleDirectory
-          | rec       =
+          | recu      =
             (return . Directory file . catMaybes) <$> subtrees
           | otherwise = return Nothing
           where
@@ -66,7 +67,7 @@ scanDir opts paths = do
       filecount = sum $ map (foldl (const . (+ 1)) 0) trees
     in
       CalcResult  linecount filecount
-  )
+    )
 
 
 measureTree :: DirTree a -> IO (DirTree Int)
