@@ -39,6 +39,7 @@ singleLineCommentCounter = Counter func
 multiLineCommentCounter :: Counter
 multiLineCommentCounter = Counter func
   where
+    func :: MainOptions -> Profile -> String -> MaybeT (State CounterState) CalcResult
     func _ (Profile { multiLineCommentDelimiters = cd }) line = do
       cs@(CounterState { currentDelimiter = isInside }) <- get
       case isInside of
@@ -46,15 +47,16 @@ multiLineCommentCounter = Counter func
           if endDelim `isPrefixOf` truncated
             then do
               put $ cs { currentDelimiter = Nothing }
-              return $ mempty { commentLines = 1 }
+              increment
             else
-              return $ mempty { commentLines = 1 }
+              increment
         Nothing ->
           case find (finder . fst) cd of
             Just delim -> do
               put $ cs { currentDelimiter = Just delim }
-              return $ mempty { commentLines = 1 }
+              increment
             Nothing -> mzero
       where
+        increment = return $ mempty { commentLines = 1 }
         truncated = dropWhile isSpace line
         finder = flip isPrefixOf truncated
