@@ -90,7 +90,7 @@ main = runCommand main'
     main' opts paths = do
       let chosenProfiles = mapMaybe (flip Map.lookup profiles . map toLower) $ selProfiles opts
       let newOpts = integrateProfile opts $ mconcat chosenProfiles
-      (CalcResult { lineCount = lk, fileCount = fk }) <- scanDir newOpts paths
+      (CalcResult { nonEmpty = lk, fileCount = fk }) <- scanDir newOpts paths
       print newOpts
       putStrLn $ "Counted " ++ show lk ++ " line" ++ plur lk
       putStrLn $ "In " ++ show fk ++ " file" ++ plur fk

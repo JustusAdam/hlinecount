@@ -1,10 +1,15 @@
-module LineCount.Filter where
+module LineCount.Filter
+  ( FileFilter(..)
+  , fileFilter
+  ) where
 
 
 import           LineCount.Base
 import           LineCount.Profile
 import           System.FilePath
 import           Data.List
+import           Data.Foldable
+import           Data.Char
 
 
 {-|
@@ -35,16 +40,12 @@ sameFolderFilter = FileFilter func
     func _ _ = not . flip elem [".", ".."] . takeFileName
 
 
-{-|
-  Represents a single step in the filter chain for the entire code.
-  (This is to allow for multi line comments to be detected by this filter.)
-  The chaining operation is function composition, the result of one filter is passed onto the next.
--}
-newtype LineFilter = LineFilter (Profile -> [String] -> [String])
+fileFilterChain :: [FileFilter]
+fileFilterChain =
+  [ sameFolderFilter
+  , hiddenFilter
+  ]
 
 
-instance Monoid LineFilter where
-  mempty = LineFilter (\_ b -> b)
-  mappend (LineFilter func1) (LineFilter func2) = LineFilter newfunc
-    where
-      newfunc prof = func2 prof . func1 prof
+fileFilter :: FileFilter
+fileFilter = fold fileFilterChain

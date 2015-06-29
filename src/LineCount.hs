@@ -16,6 +16,8 @@ import           System.FilePath
 import           Data.Bool        (bool)
 import           Data.Char
 import           LineCount.Filter
+import           LineCount.Select
+import           LineCount.Counter
 
 
 buildTree :: MainOptions -> FilePath -> IO (Maybe (DirTree ()))
@@ -66,7 +68,7 @@ scanDir opts paths = do
       linecount = sum $ map sum measured
       filecount = sum $ map (foldl (const . (+ 1)) 0) trees
     in
-      CalcResult  linecount filecount
+      CalcResult filecount 0 linecount 0
     )
 
 

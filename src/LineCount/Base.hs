@@ -5,8 +5,10 @@ module LineCount.Base
     ) where
 
 
-data CalcResult = CalcResult { lineCount :: Int
-                             , fileCount :: Int
+data CalcResult = CalcResult { fileCount    :: Int
+                             , commentLines :: Int
+                             , nonEmpty     :: Int
+                             , emptyLines   :: Int
                              } deriving (Eq, Show)
 
 
@@ -34,5 +36,5 @@ instance Foldable DirTree where
 
 
 instance Monoid CalcResult where
-  mempty = CalcResult 0 0
-  mappend (CalcResult a1 b1) (CalcResult a2 b2) = CalcResult (a1 + a2) (b1 + b2)
+  mempty = CalcResult 0 0 0 0
+  mappend (CalcResult a1 b1 c1 d1) (CalcResult a2 b2 c2 d2) = CalcResult (a1 + a2) (b1 + b2) (c1 + c2) (d1 + d2)
