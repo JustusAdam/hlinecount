@@ -1,8 +1,13 @@
 module LineCount.Profile.Prfs
-    ( __all
+    ( providedProfiles
+    , profiles
     ) where
 
 import           LineCount.Profile.Base
+import qualified Data.Map.Lazy          as Map
+import           Control.Monad
+import           Control.Arrow
+
 
 
 profileHaskell :: Profile
@@ -81,3 +86,11 @@ __all =
   , profileJava
   , profileElm
   ]
+
+
+providedProfiles :: [String]
+providedProfiles = map canonicalName __all
+
+
+profiles :: Map.Map String Profile
+profiles = Map.fromList $ prfsToAssocList __all

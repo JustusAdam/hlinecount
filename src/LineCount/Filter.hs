@@ -7,6 +7,10 @@ import           System.FilePath
 import           Data.List
 
 
+{-|
+  Represents a single step in the filter chain for files.
+  Filters are '&&' chained, thus if one of them rejects the filename it is not scanned.
+-}
 newtype FileFilter = FileFilter (MainOptions -> [Profile] -> String -> Bool)
 
 
@@ -31,7 +35,11 @@ sameFolderFilter = FileFilter func
     func _ _ = not . flip elem [".", ".."] . takeFileName
 
 
-
+{-|
+  Represents a single step in the filter chain for the entire code.
+  (This is to allow for multi line comments to be detected by this filter.)
+  The chaining operation is function composition, the result of one filter is passed onto the next.
+-}
 newtype LineFilter = LineFilter (Profile -> [String] -> [String])
 
 

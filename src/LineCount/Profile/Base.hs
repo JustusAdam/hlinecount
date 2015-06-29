@@ -1,9 +1,12 @@
 module LineCount.Profile.Base
     ( Profile(..)
+    , prfsToAssocList
     ) where
 
 
 import Data.Monoid
+import Control.Arrow
+import Control.Monad
 
 
 data Profile = Profile { canonicalName    :: String  -- ^ this name will be shown in the tooltip
@@ -21,3 +24,7 @@ instance Monoid Profile where
       (b1 <> b2)
       (c1 <> c2)
       (d1 <> d2)
+
+
+prfsToAssocList :: [Profile] -> [(String, Profile)]
+prfsToAssocList = join . map (\p -> map (id &&& const p) $ acceptedNames p)
