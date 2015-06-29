@@ -1,6 +1,5 @@
 module LineCount.Filter
-  ( FileFilter(..)
-  , fileFilter
+  ( isAllowed
   ) where
 
 
@@ -16,7 +15,7 @@ import           Data.Char
   Represents a single step in the filter chain for files.
   Filters are '&&' chained, thus if one of them rejects the filename it is not scanned.
 -}
-newtype FileFilter = FileFilter (MainOptions -> [Profile] -> String -> Bool)
+newtype FileFilter = FileFilter { unFilter :: MainOptions -> [Profile] -> String -> Bool }
 
 
 instance Monoid FileFilter where
@@ -49,3 +48,7 @@ fileFilterChain =
 
 fileFilter :: FileFilter
 fileFilter = fold fileFilterChain
+
+
+isAllowed :: MainOptions -> [Profile] -> FilePath -> Bool
+isAllowed = unFilter fileFilter

@@ -1,6 +1,5 @@
 module LineCount.Select
-  ( Selector(..)
-  , defaultSelector
+  ( selectProfile
   ) where
 
 import LineCount.Profile.Base
@@ -14,7 +13,7 @@ import Data.Foldable
   Represents a step int the 'Profile' selection process. Results are 'mplus' chained,
   ergo from left to right the function to first return a 'Just' value selects the profile.
 -}
-newtype Selector = Selector (MainOptions -> [Profile] -> FilePath -> Maybe Profile)
+newtype Selector = Selector { unSelector :: MainOptions -> [Profile] -> FilePath -> Maybe Profile }
 
 
 instance Monoid Selector where
@@ -38,3 +37,7 @@ selectorChain =
 
 selector :: Selector
 selector = fold selectorChain
+
+
+selectProfile :: MainOptions -> [Profile] -> FilePath -> Maybe Profile
+selectProfile = unSelector selector

@@ -1,29 +1,44 @@
-module LineCount.Counter where
+module LineCount.Counter (countAll) where
 
 
 import Control.Monad.State.Lazy
 import Control.Monad.Trans.Maybe
 import LineCount.Base
 import LineCount.Profile
-import Data.Monoid
 import Data.Char
 import Data.List
+import Data.Maybe
+import Data.Foldable
 
 
 data CounterState = CounterState { currentDelimiter :: Maybe (String, String) } deriving (Eq, Show)
 
 
-newtype Counter = Counter (MainOptions -> Profile -> String -> MaybeT (State CounterState) CalcResult)
+emptyCS :: CounterState
+emptyCS = CounterState { currentDelimiter = Nothing }
+
+
+newtype Counter = Counter { unCounter :: MainOptions -> Profile -> String -> MaybeT (State CounterState) CalcResult }
+
+
+isEmpty :: String -> Bool
+isEmpty = any (not . isSpace)
+
+
+nonEmptyCounter :: Counter
+nonEmptyCounter = Counter func
+  where
+    func _ _ line
+      | isEmpty line = mzero
+      | otherwise    = return $ mempty { nonEmpty = 1 }
 
 
 emptyCounter :: Counter
 emptyCounter = Counter func
   where
     func _ _ line
-      | isEmpty   = mzero
-      | otherwise = return $ mempty { emptyLines = 1 }
-      where
-        isEmpty = any (not . isSpace) line
+      | isEmpty line = return $ mempty { emptyLines = 1 }
+      | otherwise    = mzero
 
 
 singleLineCommentCounter :: Counter
@@ -59,4 +74,23 @@ multiLineCommentCounter = Counter func
       where
         increment = return $ mempty { commentLines = 1 }
         truncated = dropWhile isSpace line
-        finder = flip isPrefixOf truncated
+        finder    = flip isPrefixOf truncated
+
+
+counterChain :: [Counter]
+counterChain =
+  [ multiLineCommentCounter
+  , singleLineCommentCounter
+  , nonEmptyCounter
+  , emptyCounter
+  ]
+
+countLine :: MainOptions -> Profile -> String -> State CounterState CalcResult
+countLine opts prof =
+  fmap (fromMaybe mempty) . runMaybeT . msum . combinedFunction
+  where
+    combinedFunction = sequenceA (map ((\f -> f opts prof) . unCounter) counterChain)
+
+
+countAll :: MainOptions -> Profile -> [String] -> CalcResult
+countAll opts profs = fold . flip evalState emptyCS . mapM (countLine opts profs)

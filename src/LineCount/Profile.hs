@@ -2,6 +2,7 @@ module LineCount.Profile
   ( Profile(..)
   , profiles
   , providedProfiles
+  , prfsToAssocList
   ) where
 
 

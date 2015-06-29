@@ -15,19 +15,23 @@ import           System.Directory
 import           System.FilePath
 import           Data.Bool        (bool)
 import           Data.Char
-import           LineCount.Filter
+import qualified LineCount.Filter as Filter
 import           LineCount.Select
 import           LineCount.Counter
+import           LineCount.Profile
+import           Data.Foldable
 
 
-buildTree :: MainOptions -> FilePath -> IO (Maybe (DirTree ()))
+buildTree :: MainOptions -> [Profile] -> FilePath -> IO (Maybe (DirTree ()))
 buildTree
-  (MainOptions { targetExtensions = exts
+  opts@(MainOptions { targetExtensions = exts
                , recursive = recu
                , ignorePaths = ign
                , ignoreHidden = hidden
                }
-  ) = buildTree'
+  )
+  chosenProfiles
+  = buildTree'
   where
     buildTree' file =
       doesFileExist file >>=
@@ -56,27 +60,17 @@ buildTree
               where
                 isIgnored = or . sequenceA (map isSubsequenceOf ign)
 
-        isFileAllowed = (&&) <$> isAllowed <*> flip elem exts . takeExtension
+        isFileAllowed = Filter.isAllowed opts chosenProfiles
 
 
-scanDir :: MainOptions -> [FilePath] -> IO CalcResult
-scanDir opts paths = do
-  trees    <- catMaybes <$> mapM (buildTree opts) paths
-  measured <- mapM measureTree trees
-  return (
-    let
-      linecount = sum $ map sum measured
-      filecount = sum $ map (foldl (const . (+ 1)) 0) trees
-    in
-      CalcResult filecount 0 linecount 0
-    )
+scanDir :: MainOptions -> [Profile] -> [FilePath] -> IO CalcResult
+scanDir opts profiles paths = do
+  trees    <- catMaybes <$> mapM (buildTree opts profiles) paths
+  measured <- mapM (measureTree opts profiles) trees
+  return $ fold $ map fold measured
 
 
-measureTree :: DirTree a -> IO (DirTree Int)
-measureTree (Directory name contents) = Directory name <$> mapM measureTree contents
-measureTree (File name _) =
-  File name . countLines <$> readFile name
-  where
-    countLines    = length . nonEmptyLines
-    nonEmptyLines = filter (not . isOnlyWhite) . lines
-    isOnlyWhite   = not . any (not . isSpace)
+measureTree :: MainOptions -> [Profile] -> DirTree a -> IO (DirTree CalcResult)
+measureTree opts profs (Directory name contents) = Directory name <$> mapM (measureTree opts profs) contents
+measureTree opts profs (File name _) =
+  File name . maybe (const mempty) (countAll opts) (lookup (takeExtension name) (prfsToAssocList profs)) . lines <$> readFile name
