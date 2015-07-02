@@ -1,5 +1,9 @@
 module LineCount.Filter
   ( isAllowed
+  , hiddenFilter
+  , sameFolderFilter
+  , optsFilter
+  , FileFilter(..)
   ) where
 
 
@@ -9,13 +13,14 @@ import           System.FilePath
 import           Data.List
 import           Data.Foldable
 import           Data.Char
+import           Data.Composition
 
 
 {-|
   Represents a single step in the filter chain for files.
   Filters are '&&' chained, thus if one of them rejects the filename it is not scanned.
 -}
-newtype FileFilter = FileFilter { unFilter :: MainOptions -> [Profile] -> String -> Bool }
+newtype FileFilter = FileFilter { unFilter :: MainOptions -> [Profile] -> FilePath -> Bool }
 
 
 instance Monoid FileFilter where
@@ -28,26 +33,34 @@ instance Monoid FileFilter where
 hiddenFilter :: FileFilter
 hiddenFilter = FileFilter func
   where
-    func (MainOptions { ignoreHidden = hidden }) _
-      | hidden    = not . isPrefixOf "." . takeFileName
-      | otherwise = const True
+    func (MainOptions { ignoreHidden = hidden }) _ f
+      | hidden    = not (isPrefixOf "." $ takeFileName f)
+      | otherwise = True
 
 
 sameFolderFilter :: FileFilter
 sameFolderFilter = FileFilter func
   where
-    func _ _ = not . flip elem [".", ".."] . takeFileName
+    func _ _ = flip notElem [".", ".."] . takeFileName
 
 
-fileFilterChain :: [FileFilter]
-fileFilterChain =
-  [ sameFolderFilter
+optsFilter :: FileFilter
+optsFilter = FileFilter func
+  where
+    func (MainOptions { ignorePaths = ip}) _ f =
+      and $ sequenceA (map (not .: isSubsequenceOf) ip) f
+
+
+filterChain :: [FileFilter]
+filterChain =
+  [ optsFilter
+  , sameFolderFilter
   , hiddenFilter
   ]
 
 
 fileFilter :: FileFilter
-fileFilter = fold fileFilterChain
+fileFilter = fold filterChain
 
 
 isAllowed :: MainOptions -> [Profile] -> FilePath -> Bool

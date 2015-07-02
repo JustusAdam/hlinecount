@@ -2,6 +2,7 @@ module LineCount.Base
     ( DirTree(..)
     , CalcResult(..)
     , MainOptions(..)
+    , emptyOpts
     ) where
 
 
