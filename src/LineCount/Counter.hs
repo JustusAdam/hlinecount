@@ -1,4 +1,14 @@
-module LineCount.Counter (countAll) where
+module LineCount.Counter
+  ( countAll
+  , Counter(..)
+  , CounterState
+  , nonEmptyCounter
+  , emptyCounter
+  , singleLineCommentCounter
+  , multiLineCommentCounter
+  , countLine
+  , emptyCS
+  ) where
 
 
 import Control.Monad.State.Lazy
@@ -21,8 +31,16 @@ emptyCS = CounterState { currentDelimiter = Nothing }
 newtype Counter = Counter { unCounter :: MainOptions -> Profile -> String -> MaybeT (State CounterState) CalcResult }
 
 
+instance Monoid Counter where
+  mempty = Counter (\_ _ _ -> mzero)
+  mappend (Counter func1) (Counter func2) = Counter newfunc
+    where
+      newfunc opts profile input = func1 opts profile input `mplus` func2 opts profile input
+
+
+
 isEmpty :: String -> Bool
-isEmpty = any (not . isSpace)
+isEmpty = all isSpace
 
 
 nonEmptyCounter :: Counter
