@@ -10,27 +10,19 @@ module LineCount
 
 import           LineCount.Base
 import           Data.Maybe
-import           Data.List
 import           System.Directory
 import           System.FilePath
 import           Data.Bool        (bool)
-import           Data.Char
 import qualified LineCount.Filter as Filter
 import           LineCount.Select
 import           LineCount.Counter
 import           LineCount.Profile
 import           Data.Foldable
-import Debug.Trace
 
 
 buildTree :: MainOptions -> [Profile] -> FilePath -> IO (Maybe (DirTree ()))
 buildTree
-  opts@(MainOptions { targetExtensions = exts
-                    , recursive = recu
-                    , ignorePaths = ign
-                    , ignoreHidden = hidden
-                    }
-  )
+  opts@(MainOptions { recursive = recu })
   chosenProfiles
   = buildTree'
   where
@@ -52,10 +44,10 @@ buildTree
 
 
 scanDir :: MainOptions -> [Profile] -> [FilePath] -> IO CalcResult
-scanDir opts profiles paths = do
-  trees    <- catMaybes <$> mapM (buildTree opts profiles) paths
+scanDir opts selectedProfiles paths = do
+  trees    <- catMaybes <$> mapM (buildTree opts selectedProfiles) paths
   print trees
-  measured <- mapM (measureTree opts profiles) trees
+  measured <- mapM (measureTree opts selectedProfiles) trees
   print measured
   return $ fold $ map fold measured
 

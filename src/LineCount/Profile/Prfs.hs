@@ -6,8 +6,6 @@ module LineCount.Profile.Prfs
 
 import           LineCount.Profile.Base
 import qualified Data.Map.Lazy          as Map
-import           Control.Monad
-import           Control.Arrow
 
 
 

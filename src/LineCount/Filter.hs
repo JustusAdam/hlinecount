@@ -10,10 +10,9 @@ module LineCount.Filter
 import           LineCount.Base
 import           LineCount.Profile
 import           System.FilePath
-import           Data.List
 import           Data.Foldable
-import           Data.Char
 import           Data.Composition
+import           Data.List
 
 
 {-|
