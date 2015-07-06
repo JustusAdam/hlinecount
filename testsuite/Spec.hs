@@ -3,12 +3,10 @@ module Spec where
 
 import Test.Hspec
 import Test.QuickCheck
-import Control.Exception (evaluate)
-
-
+import LineCount
 import LineCount.Profile
 import LineCount.Counter
-import LineCount
+import LineCount.Filter
 import Control.Monad.Trans.Maybe
 import Control.Monad.State.Lazy
 
@@ -19,6 +17,58 @@ emptyOpts = MainOptions True [] [] True [] []
 emptyProfile = Profile "" [] [] [] []
 
 
+testAFilter :: FileFilter -> MainOptions -> [Profile] -> FilePath -> Bool
+testAFilter = unFilter
+
+
+testAFilterWithEmpty :: FileFilter -> FilePath -> Bool
+testAFilterWithEmpty f = testAFilter f emptyOpts []
+
+
+filtersSpec :: Spec
+filtersSpec = do
+
+  describe "[function] hiddenFilter" $ do
+
+    let testFunc = testAFilterWithEmpty hiddenFilter
+
+    it "rejects \".\"" $
+      testFunc "." `shouldBe` False
+    it "rejects .⍵" $
+      testFunc ".hello" `shouldBe` False
+    it "accepts { a⍵ | a ≠ '.' }" $
+      testFunc "hello" `shouldBe` True
+    it "accepts 𝜖" $
+      testFunc "" `shouldBe` True
+    it "accepts { a⍵ | a ∈ SYMBOLS\\{'.'} }" $
+      testFunc "," `shouldBe` True
+    it "rejects { ⍵/. } " $
+      testFunc "/." `shouldBe` False
+    it "rejects a unix filepath with the last component ∈ { .⍵ }" $
+      testFunc "some/path/.file" `shouldBe` False
+
+  describe "[function] sameFolderFilter"  $ do
+
+    let testFunc = testAFilterWithEmpty sameFolderFilter
+
+    it "rejects \".\"" $
+      testFunc "." `shouldBe` False
+    it "rejects \"..\"" $
+      testFunc ".." `shouldBe` False
+    it "rejects an arbitrary unix path ending in \"/.\"" $
+      testFunc "some/path/." `shouldBe` False
+    it "rejects an arbitrary unix path ending in \"/..\"" $
+      testFunc "some/path/.." `shouldBe` False
+    it "accepts ⍵" $
+      testFunc "word" `shouldBe` True
+    it "accepts .⍵" $
+      testFunc ".some" `shouldBe` True
+    it "accepts an arbitrary path" $
+      testFunc "/some/path" `shouldBe` True
+    it "accepts an arbitrary path ending with a word prefixed with \".\"" $
+      testFunc "/some/path/.file" `shouldBe` True
+
+
 testACounter :: Counter -> MainOptions -> Profile -> CounterState -> String -> Maybe CalcResult
 testACounter c opts profile state input = runMaybeT (unCounter c opts profile input) `evalState` state
 
@@ -27,36 +77,36 @@ testACounterWEmpty :: Counter -> String -> Maybe CalcResult
 testACounterWEmpty c = testACounter c emptyOpts emptyProfile emptyCS
 
 
-main :: IO ()
-main = hspec $ do
-  countersSpec
-
-
 countersSpec :: Spec
 countersSpec = do
-  let codeline = Just (mempty { nonEmpty = 1 })
-  let commentLine = Just (mempty { commentLines = 1 })
-  let emptyLine = Just (mempty { emptyLines = 1 })
-  let reject = Nothing
 
-  describe "emptyCounters" $ do
+  let codeline    = Just (mempty { nonEmpty = 1 })
+  let commentLine = Just (mempty { commentLines = 1 })
+  let emptyLine   = Just (mempty { emptyLines = 1 })
+  let reject      = Nothing
+
+  describe "[function] emptyCounters" $ do
+
     let testFunc = testACounterWEmpty emptyCounter
-    it "counts a line with only spaces" $
+
+    it "counts {' '}*" $
       testFunc "    " `shouldBe` emptyLine
-    it "counts the empty string" $
+    it "counts 𝜖" $
       testFunc "" `shouldBe` emptyLine
-    it "rejects a line containing a character" $
+    it "rejects { ⍵ | ⍵ ∉ {' '}* }" $
       testFunc "f" `shouldBe` reject
-    it "rejects a line containing a number" $
+    it "rejects { ⍵iσ | ⍵, σ ∈ Σ*,  i ∈ {0-9} } " $
       testFunc "4" `shouldBe` reject
     it "rejects a line containing spaces and a character" $
       testFunc "  f" `shouldBe` reject
 
-  describe "nonEmptyCounter" $ do
+  describe "[function] nonEmptyCounter" $ do
+
     let testFunc = testACounterWEmpty nonEmptyCounter
-    it "counts a single character as a new codeline" $
+
+    it "counts { ⍵ | ⍵ ∈ Σ\\{' '} } as a new codeline" $
       testFunc "f" `shouldBe` codeline
-    it "counts spaces followed by a character as new codeline" $
+    it "counts { ⍵a | ⍵ ∈ {' '}*, a ∈ Σ\\{' '} } as new codeline" $
       testFunc "  f" `shouldBe` codeline
     it "counts a line with a non-word character" $
       testFunc "." `shouldBe` codeline
@@ -65,8 +115,10 @@ countersSpec = do
     it "rejects the empty string" $
       testFunc "" `shouldBe` reject
 
-  describe "singleLineCommentCounter" $ do
+  describe "[function] singleLineCommentCounter" $ do
+
     let testFunc = testACounter singleLineCommentCounter emptyOpts (emptyProfile { commentDelimiter = ["#"] }) emptyCS
+
     it "counts a line with just the comment delimiter as new comment line" $
       testFunc "#" `shouldBe` commentLine
     it "counts a line with the delimiter and spaces before it" $
@@ -80,12 +132,10 @@ countersSpec = do
     it "rejects a line with the delimiter, but not as first character" $
       testFunc " j#sv" `shouldBe` reject
 
-  describe "emptyCounter + nonEmptyCounter" $ do
+  describe "[composed counter] emptyCounter + nonEmptyCounter" $ do
+
     let testFunc = testACounterWEmpty (emptyCounter `mappend` nonEmptyCounter)
-    -- expected result for a code line
-    let clsucc = Just (mempty { nonEmpty = 1 })
-    -- expected result for an empty line
-    let elsucc = Just (mempty { emptyLines = 1 })
+
     it "counts a line with characters as a codeline" $
       testFunc "wjn" `shouldBe` codeline
     it "counts a line with spaces and characters as codeline" $
@@ -95,8 +145,10 @@ countersSpec = do
     it "counts the empty string as an empty line" $
       testFunc "" `shouldBe` emptyLine
 
-  describe "emptyCounter + nonEmptyCounter + singleLineCommentCounter" $ do
+  describe "[composed counter] emptyCounter + nonEmptyCounter + singleLineCommentCounter" $ do
+
     let testFunc = testACounter (singleLineCommentCounter `mappend` nonEmptyCounter `mappend` emptyCounter) emptyOpts (emptyProfile { commentDelimiter = ["#"] }) emptyCS
+
     it "counts a line with regular characters as codeline" $
       testFunc "wefjb" `shouldBe` codeline
     it "counts a line with no characters as empty" $
@@ -107,3 +159,9 @@ countersSpec = do
       testFunc "#oernv" `shouldBe` commentLine
     it "counts a line with the delimiter in the middle as code" $
       testFunc "ejkn#ejnv" `shouldBe` codeline
+
+
+main :: IO ()
+main = hspec $ do
+  countersSpec
+  filtersSpec
