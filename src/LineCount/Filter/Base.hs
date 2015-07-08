@@ -1,12 +1,12 @@
 module LineCount.Filter.Base where
 
 
-import           LineCount.Base
-import           LineCount.Profile
-import           System.FilePath
-import           Data.Foldable
-import           Data.Composition
-import           Data.List
+import LineCount.Base
+import LineCount.Profile
+import System.FilePath
+import Data.Foldable
+import Data.Composition
+import Data.List
 
 
 {-|
