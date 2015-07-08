@@ -17,7 +17,20 @@ cabal-version:       >=1.10
 
 executable hlinecount
   main-is:             Main.hs
-  -- other-modules:
+  other-modules:
+    LineCount
+    LineCount.Base
+    LineCount.Select
+    LineCount.Counter
+    LineCount.Counter.Base
+    LineCount.Counter.Values
+    LineCount.Filter
+    LineCount.Filter.Base
+    LineCount.Filter.Values 
+    LineCount.Profile
+    LineCount.Profile.Base
+    LineCount.Profile.Values
+
   -- other-extensions:
   build-depends:
     base         >=4.8 && <4.9,

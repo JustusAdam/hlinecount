@@ -6,7 +6,10 @@ import Test.QuickCheck
 import LineCount
 import LineCount.Profile
 import LineCount.Counter
-import LineCount.Filter
+import LineCount.Counter.Values
+import LineCount.Counter.Base
+import LineCount.Filter.Base
+import LineCount.Filter.Values
 import Control.Monad.Trans.Maybe
 import Control.Monad.State.Lazy
 

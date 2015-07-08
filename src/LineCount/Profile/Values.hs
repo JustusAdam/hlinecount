@@ -1,4 +1,4 @@
-module LineCount.Profile.Prfs
+module LineCount.Profile.Values
     ( providedProfiles
     , profiles
     ) where

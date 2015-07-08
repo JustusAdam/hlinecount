@@ -1,13 +1,6 @@
 module LineCount.Counter
   ( countAll
-  , Counter(..)
-  , CounterState
-  , nonEmptyCounter
-  , emptyCounter
-  , singleLineCommentCounter
-  , multiLineCommentCounter
   , countLine
-  , emptyCS
   ) where
 
 
@@ -15,93 +8,11 @@ import Control.Monad.State.Lazy
 import Control.Monad.Trans.Maybe
 import LineCount.Base
 import LineCount.Profile
-import Data.Char
-import Data.List
 import Data.Maybe
 import Data.Foldable
+import LineCount.Counter.Values
+import LineCount.Counter.Base
 
-
-data CounterState = CounterState { currentDelimiter :: Maybe (String, String) } deriving (Eq, Show)
-
-
-emptyCS :: CounterState
-emptyCS = CounterState { currentDelimiter = Nothing }
-
-
-newtype Counter = Counter { unCounter :: MainOptions -> Profile -> String -> MaybeT (State CounterState) CalcResult }
-
-
-instance Monoid Counter where
-  mempty = Counter (\_ _ _ -> mzero)
-  mappend (Counter func1) (Counter func2) = Counter newfunc
-    where
-      newfunc opts profile input = func1 opts profile input `mplus` func2 opts profile input
-
-
-
-isEmpty :: String -> Bool
-isEmpty = all isSpace
-
-
-nonEmptyCounter :: Counter
-nonEmptyCounter = Counter func
-  where
-    func _ _ line
-      | isEmpty line = mzero
-      | otherwise    = return $ mempty { nonEmpty = 1 }
-
-
-emptyCounter :: Counter
-emptyCounter = Counter func
-  where
-    func _ _ line
-      | isEmpty line = return $ mempty { emptyLines = 1 }
-      | otherwise    = mzero
-
-
-singleLineCommentCounter :: Counter
-singleLineCommentCounter = Counter func
-  where
-    func _ (Profile { commentDelimiter = dl }) line
-      | isComment = return $ mempty { commentLines = 1 }
-      | otherwise = mzero
-      where
-        isComment = or $ sequenceA (map isPrefixOf dl) $ filter (not . isSpace) line
-
-
-multiLineCommentCounter :: Counter
-multiLineCommentCounter = Counter func
-  where
-    func :: MainOptions -> Profile -> String -> MaybeT (State CounterState) CalcResult
-    func _ (Profile { multiLineCommentDelimiters = cd }) line = do
-      cs@(CounterState { currentDelimiter = isInside }) <- get
-      case isInside of
-        Just (_, endDelim) ->
-          if endDelim `isPrefixOf` truncated
-            then do
-              put $ cs { currentDelimiter = Nothing }
-              increment
-            else
-              increment
-        Nothing ->
-          case find (finder . fst) cd of
-            Just delim -> do
-              put $ cs { currentDelimiter = Just delim }
-              increment
-            Nothing -> mzero
-      where
-        increment = return $ mempty { commentLines = 1 }
-        truncated = dropWhile isSpace line
-        finder    = flip isPrefixOf truncated
-
-
-counterChain :: [Counter]
-counterChain =
-  [ multiLineCommentCounter
-  , singleLineCommentCounter
-  , nonEmptyCounter
-  , emptyCounter
-  ]
 
 countLine :: MainOptions -> Profile -> String -> State CounterState CalcResult
 countLine opts prof =

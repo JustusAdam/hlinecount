@@ -7,4 +7,4 @@ module LineCount.Profile
 
 
 import           LineCount.Profile.Base
-import           LineCount.Profile.Prfs
+import           LineCount.Profile.Values
