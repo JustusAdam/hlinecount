@@ -6,72 +6,73 @@ module LineCount.Profile.Values
 
 
 import qualified Data.Map.Lazy          as Map
+import           Data.Monoid.Unicode
 import           LineCount.Profile.Base
 
 
 
 profileHaskell ∷ Profile
-profileHaskell = mempty { canonicalName    = "Haskell"
-                        , fileExtensions   = [".hs", ".lhs"]
-                        , commentDelimiter = ["--"]
-                        , acceptedNames    = ["haskell", "hs"]
-                        }
-
-
-profilePython ∷ Profile
-profilePython = mempty { canonicalName    = "Python"
-                       , fileExtensions   = [".py"]
-                       , commentDelimiter = ["#"]
-                       , acceptedNames    = ["python", "py"]
-                       }
-
-
-profileJava ∷ Profile
-profileJava = mempty { canonicalName    = "Java"
-                     , fileExtensions   = [".java"]
-                     , commentDelimiter = ["//"]
-                     , acceptedNames    = ["java"]
+profileHaskell = (∅) { canonicalName    = "Haskell"
+                     , fileExtensions   = [".hs", ".lhs"]
+                     , commentDelimiter = ["--"]
+                     , acceptedNames    = ["haskell", "hs"]
                      }
 
 
-profileC ∷ Profile
-profileC = mempty { canonicalName    = "C"
-                  , fileExtensions   = [".c", ".h"]
+profilePython ∷ Profile
+profilePython = (∅) { canonicalName    = "Python"
+                    , fileExtensions   = [".py"]
+                    , commentDelimiter = ["#"]
+                    , acceptedNames    = ["python", "py"]
+                    }
+
+
+profileJava ∷ Profile
+profileJava = (∅) { canonicalName    = "Java"
+                  , fileExtensions   = [".java"]
                   , commentDelimiter = ["//"]
-                  , acceptedNames    = ["c"]
+                  , acceptedNames    = ["java"]
                   }
 
 
+profileC ∷ Profile
+profileC = (∅) { canonicalName    = "C"
+               , fileExtensions   = [".c", ".h"]
+               , commentDelimiter = ["//"]
+               , acceptedNames    = ["c"]
+               }
+
+
 profileCsharp ∷ Profile
-profileCsharp = mempty { canonicalName    = "C#"
-                       , fileExtensions   = [".cs"]
-                       , commentDelimiter = ["//"]
-                       , acceptedNames    = ["csharp", "c#"]
-                       }
+profileCsharp = (∅) { canonicalName    = "C#"
+                    , fileExtensions   = [".cs"]
+                    , commentDelimiter = ["//"]
+                    , acceptedNames    = ["csharp", "c#"]
+                    }
 
 
 profileCPP ∷ Profile
-profileCPP = mempty { canonicalName    = "C++"
-                    , fileExtensions   = [".cpp", ".h", ".hpp", ".c++"]
-                    , commentDelimiter = ["//"]
-                    , acceptedNames    = ["cplusplus", "cpp", "c++"]
-                    }
+profileCPP = (∅) { canonicalName    = "C++"
+                 , fileExtensions   = [".cpp", ".h", ".hpp", ".c++"]
+                 , commentDelimiter = ["//"]
+                 , acceptedNames    = ["cplusplus", "cpp", "c++"]
+                 }
 
 
 profileFsharp ∷ Profile
-profileFsharp = mempty { canonicalName    = "F#"
-                       , fileExtensions   = [".fs", ".fsi"]
-                       , commentDelimiter = ["--"]
-                       , acceptedNames    = ["fsharp", "fs"]
-                       }
+profileFsharp = (∅) { canonicalName    = "F#"
+                    , fileExtensions   = [".fs", ".fsi"]
+                    , commentDelimiter = ["--"]
+                    , acceptedNames    = ["fsharp", "fs"]
+                    }
 
 
 profileElm ∷ Profile
-profileElm = mempty { canonicalName    = "Elm"
-                    , fileExtensions   = [".elm"]
-                    , commentDelimiter = ["--"]
-                    , acceptedNames    = ["elm"]
-                    }
+profileElm = (∅) { canonicalName    = "Elm"
+                 , fileExtensions   = [".elm"]
+                 , commentDelimiter = ["--"]
+                 , acceptedNames    = ["elm"]
+                 }
 
 
 

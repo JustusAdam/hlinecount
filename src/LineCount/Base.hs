@@ -7,6 +7,7 @@ module LineCount.Base
 
 
 import           Data.Monoid
+import           Data.Monoid.Unicode
 
 
 data CalcResult = CalcResult { fileCount    ∷ Sum Int
@@ -40,5 +41,5 @@ instance Foldable DirTree where
 
 
 instance Monoid CalcResult where
-  mempty = CalcResult mempty mempty mempty mempty
-  mappend (CalcResult a1 b1 c1 d1) (CalcResult a2 b2 c2 d2) = CalcResult (a1 <> a2) (b1 <> b2) (c1 <> c2) (d1 <> d2)
+  mempty = CalcResult (∅) (∅) (∅) (∅)
+  mappend (CalcResult a1 b1 c1 d1) (CalcResult a2 b2 c2 d2) = CalcResult (a1 ⊕ a2) (b1 ⊕ b2) (c1 ⊕ c2) (d1 ⊕ d2)

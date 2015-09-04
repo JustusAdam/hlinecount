@@ -10,6 +10,7 @@ import           Data.Function.JAExtra
 import           Data.Tuple.JAExtra
 import           LineCount.Base
 import           LineCount.Profile
+import           Prelude.Unicode
 
 
 data CounterState = CounterState
@@ -30,4 +31,4 @@ instance Monoid Counter where
   mempty = Counter (const3 mzero)
   mappend (Counter func1) (Counter func2) = Counter newfunc
     where
-      newfunc = curry3 (uncurry mplus . ((&&&) `on` uncurry3) func1 func2)
+      newfunc = curry3 (uncurry mplus ∘ ((&&&) `on` uncurry3) func1 func2)

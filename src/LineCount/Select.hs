@@ -11,6 +11,7 @@ import           Data.Function.JAExtra
 import           Data.Tuple.JAExtra
 import           LineCount.Base
 import           LineCount.Profile.Base
+import           Prelude.Unicode
 import           System.FilePath
 
 
@@ -22,10 +23,10 @@ newtype Selector = Selector { unSelector ∷ MainOptions → [Profile] → FileP
 
 
 instance Monoid Selector where
-  mempty = Selector (const3 Nothing)
+  mempty = Selector (const3 mzero)
   mappend (Selector s1) (Selector s2) = Selector newfunc
     where
-      newfunc = curry3 (uncurry mplus . ((&&&) `on` uncurry3) s1 s2)
+      newfunc = curry3 (uncurry mplus ∘ ((&&&) `on` uncurry3) s1 s2)
 
 
 defaultSelector ∷ Selector

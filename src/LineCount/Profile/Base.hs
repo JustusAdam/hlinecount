@@ -5,9 +5,12 @@ module LineCount.Profile.Base
     ) where
 
 
+import           Control.Applicative.Unicode hiding ((∅))
 import           Control.Arrow
 import           Control.Monad
 import           Data.Monoid
+import           Data.Monoid.Unicode
+import           Prelude.Unicode
 
 
 data Profile = Profile { canonicalName              ∷ String  -- ^ this name will be shown in the tooltip
@@ -19,15 +22,15 @@ data Profile = Profile { canonicalName              ∷ String  -- ^ this name w
 
 
 instance Monoid Profile where
-  mempty = Profile mempty mempty mempty mempty mempty
+  mempty = Profile (∅) (∅) (∅) (∅) (∅)
   mappend (Profile a1 b1 c1 d1 e1) (Profile a2 b2 c2 d2 e2) =
     Profile
-      (a1 <> ", " <> a2)
-      (b1 <> b2)
-      (c1 <> c2)
-      (d1 <> d2)
-      (e1 <> e2)
+      (a1 ⊕ ", " ⊕ a2)
+      (b1 ⊕ b2)
+      (c1 ⊕ c2)
+      (d1 ⊕ d2)
+      (e1 ⊕ e2)
 
 
 prfsToAssocList ∷ [Profile] → [(String, Profile)]
-prfsToAssocList = join . map (map <$> (id &&&) . const <*> acceptedNames)
+prfsToAssocList = join ∘ map (map <$> (id &&&) ∘ const ⊛ acceptedNames)

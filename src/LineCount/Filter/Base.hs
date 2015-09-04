@@ -8,6 +8,7 @@ import           Data.Function.JAExtra
 import           Data.Tuple.JAExtra
 import           LineCount.Base
 import           LineCount.Profile
+import           Prelude.Unicode
 
 
 {-|
@@ -21,4 +22,4 @@ instance Monoid FileFilter where
   mempty  = FileFilter (const3 True)
   mappend (FileFilter func1) (FileFilter func2) = FileFilter newfunc
     where
-      newfunc = curry3 (uncurry (&&) . ((&&&) `on` uncurry3) func1 func2)
+      newfunc = curry3 (uncurry (&&) ∘ ((&&&) `on` uncurry3) func1 func2)

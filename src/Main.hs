@@ -1,4 +1,5 @@
-{-# LANGUAGE UnicodeSyntax #-}
+{-# LANGUAGE UnicodeSyntax  #-}
+{-# LANGUAGE NamedFieldPuns #-}
 module Main where
 
 import           Data.Char
@@ -8,6 +9,10 @@ import           Data.Maybe
 import           LineCount
 import           LineCount.Profile as P
 import           Options
+import Data.Monoid.Unicode
+import Data.Monoid
+import Prelude.Unicode
+import Data.List.Unicode
 
 
 recursiveDefault ∷ Bool
@@ -19,7 +24,7 @@ ignoredDefaultPaths =
   , "Setup.hs"
   ]
 defaultFiles ∷ [String]
-defaultFiles = []
+defaultFiles = (∅)
 
 
 instance Options MainOptions where
@@ -58,7 +63,7 @@ instance Options MainOptions where
                    , optionDescription =
                      "Select predefined profiles\n\
                      \    Available profiles are:\n    "
-                     ++ intercalate ", " P.providedProfiles
+                     ⊕ intercalate ", " P.providedProfiles
                    , optionLongFlags   = ["profile"]
                    })
     <*> defineOption
@@ -73,9 +78,9 @@ instance Options MainOptions where
 integrateProfile ∷ MainOptions → Profile → MainOptions
 integrateProfile
   m@(MainOptions { targetExtensions = t })
-  (Profile { fileExtensions = fex })
+  (Profile { fileExtensions })
   =
-  m { targetExtensions = t `union` fex }
+  m { targetExtensions = t ∪ fileExtensions }
 
 
 plur ∷ Int → String
@@ -89,8 +94,10 @@ main = runCommand main'
   where
     main' ∷ MainOptions → [FilePath] → IO ()
     main' opts paths = do
-      let chosenProfiles = mapMaybe (flip Map.lookup profiles . map toLower) $ selProfiles opts
+      let chosenProfiles = mapMaybe (flip Map.lookup profiles ∘ map toLower) $ selProfiles opts
       print chosenProfiles
-      (CalcResult { nonEmpty = lk, fileCount = fk }) <- scanDir opts chosenProfiles paths
-      putStrLn $ "Counted " ++ show lk ++ " line" ++ plur lk
-      putStrLn $ "In " ++ show fk ++ " file" ++ plur fk
+      (CalcResult { nonEmpty, fileCount }) ← scanDir opts chosenProfiles paths
+      let nonEmpty' = getSum nonEmpty
+          fileCount' = getSum fileCount
+      putStrLn $ "Counted " ⊕ show nonEmpty' ⊕ " line" ⊕ plur nonEmpty'
+      putStrLn $ "In " ⊕ show fileCount' ⊕ " file" ⊕ plur fileCount'
