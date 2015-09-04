@@ -1,23 +1,22 @@
 module Spec where
 
 
-import Test.Hspec
-import Test.QuickCheck
-import LineCount
-import LineCount.Profile
-import LineCount.Counter
-import LineCount.Counter.Values
-import LineCount.Counter.Base
-import LineCount.Filter.Base
-import LineCount.Filter.Values
-import Control.Monad.Trans.Maybe
-import Control.Monad.State.Lazy
+import           Control.Monad.State.Lazy
+import           Control.Monad.Trans.Maybe
+import           LineCount
+import           LineCount.Counter
+import           LineCount.Counter.Base
+import           LineCount.Counter.Values
+import           LineCount.Filter.Base
+import           LineCount.Filter.Values
+import           LineCount.Profile
+import           Test.Hspec
 
 
 emptyOpts = MainOptions True [] [] True [] []
 
 
-emptyProfile = Profile "" [] [] [] []
+emptyProfile = mempty
 
 
 testAFilter :: FileFilter -> MainOptions -> [Profile] -> FilePath -> Bool

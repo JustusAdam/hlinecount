@@ -4,15 +4,15 @@ module LineCount.Profile.Base
     ) where
 
 
-import Data.Monoid
-import Control.Arrow
-import Control.Monad
+import           Control.Arrow
+import           Control.Monad
+import           Data.Monoid
 
 
-data Profile = Profile { canonicalName    :: String  -- ^ this name will be shown in the tooltip
-                       , fileExtensions   :: [FilePath]  -- ^ which files contain code of this language
-                       , commentDelimiter :: [String]  -- ^ what denotes a single-line comment in this language
-                       , acceptedNames    :: [String]  -- ^ under which names can this profile be found
+data Profile = Profile { canonicalName              :: String  -- ^ this name will be shown in the tooltip
+                       , fileExtensions             :: [FilePath]  -- ^ which files contain code of this language
+                       , commentDelimiter           :: [String]  -- ^ what denotes a single-line comment in this language
+                       , acceptedNames              :: [String]  -- ^ under which names can this profile be found
                        , multiLineCommentDelimiters :: [(String, String)]
                        } deriving (Show, Eq)
 
@@ -29,4 +29,4 @@ instance Monoid Profile where
 
 
 prfsToAssocList :: [Profile] -> [(String, Profile)]
-prfsToAssocList = join . map (\p -> map (id &&& const p) $ acceptedNames p)
+prfsToAssocList = join . map (map <$> (&&&) id . const <*> acceptedNames)

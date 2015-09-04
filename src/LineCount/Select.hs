@@ -2,11 +2,12 @@ module LineCount.Select
   ( selectProfile
   ) where
 
-import LineCount.Profile.Base
-import LineCount.Base
-import System.FilePath
-import Control.Monad
-import Data.Foldable
+import           Control.Monad
+import           Data.Foldable
+import           Data.Function.JAExtra
+import           LineCount.Base
+import           LineCount.Profile.Base
+import           System.FilePath
 
 
 {-|
@@ -17,16 +18,16 @@ newtype Selector = Selector { unSelector :: MainOptions -> [Profile] -> FilePath
 
 
 instance Monoid Selector where
-  mempty = Selector (\_ _ _ -> Nothing)
+  mempty = Selector (const3 Nothing)
   mappend (Selector s1) (Selector s2) = Selector newfunc
     where
       newfunc opts profs path = s1 opts profs path `mplus` s2 opts profs path
 
 
 defaultSelector :: Selector
-defaultSelector = Selector func
+defaultSelector = Selector (const func)
   where
-    func _ profiles path = lookup (takeExtension path) $ prfsToAssocList profiles
+    func profiles path = lookup (takeExtension path) $ prfsToAssocList profiles
 
 
 selectorChain :: [Selector]

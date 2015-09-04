@@ -1,12 +1,12 @@
 module Main where
 
+import           Data.Char
 import           Data.List
+import qualified Data.Map          as Map
 import           Data.Maybe
-import           Options
 import           LineCount
 import           LineCount.Profile as P
-import qualified Data.Map          as Map
-import           Data.Char
+import           Options
 
 
 recursiveDefault :: Bool

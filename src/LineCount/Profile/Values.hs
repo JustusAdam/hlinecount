@@ -4,8 +4,8 @@ module LineCount.Profile.Values
     ) where
 
 
-import           LineCount.Profile.Base
 import qualified Data.Map.Lazy          as Map
+import           LineCount.Profile.Base
 
 
 

@@ -1,13 +1,14 @@
 module LineCount.Counter.Values where
 
 
-import Control.Monad.State.Lazy
-import Control.Monad.Trans.Maybe
-import LineCount.Base
-import LineCount.Profile
-import Data.Char
-import Data.List
-import LineCount.Counter.Base
+import           Control.Monad.State.Lazy
+import           Control.Monad.Trans.Maybe
+import           Data.Char
+import           Data.Function.JAExtra
+import           Data.List
+import           LineCount.Base
+import           LineCount.Counter.Base
+import           LineCount.Profile
 
 
 isEmpty :: String -> Bool
@@ -15,25 +16,25 @@ isEmpty = all isSpace
 
 
 nonEmptyCounter :: Counter
-nonEmptyCounter = Counter func
+nonEmptyCounter = Counter (const2 func)
   where
-    func _ _ line
+    func line
       | isEmpty line = mzero
       | otherwise    = return $ mempty { nonEmpty = 1 }
 
 
 emptyCounter :: Counter
-emptyCounter = Counter func
+emptyCounter = Counter (const2 func)
   where
-    func _ _ line
+    func line
       | isEmpty line = return $ mempty { emptyLines = 1 }
       | otherwise    = mzero
 
 
 singleLineCommentCounter :: Counter
-singleLineCommentCounter = Counter func
+singleLineCommentCounter = Counter (const func)
   where
-    func _ (Profile { commentDelimiter = dl }) line
+    func (Profile { commentDelimiter = dl }) line
       | isComment = return $ mempty { commentLines = 1 }
       | otherwise = mzero
       where
@@ -41,23 +42,21 @@ singleLineCommentCounter = Counter func
 
 
 multiLineCommentCounter :: Counter
-multiLineCommentCounter = Counter func
+multiLineCommentCounter = Counter (const func)
   where
-    func :: MainOptions -> Profile -> String -> MaybeT (State CounterState) CalcResult
-    func _ (Profile { multiLineCommentDelimiters = cd }) line = do
+    func :: Profile -> String -> MaybeT (State CounterState) CalcResult
+    func (Profile { multiLineCommentDelimiters = cd }) line = do
       cs@(CounterState { currentDelimiter = isInside }) <- get
       case isInside of
-        Just (_, endDelim) ->
-          if endDelim `isPrefixOf` truncated
-            then do
-              put $ cs { currentDelimiter = Nothing }
-              increment
-            else
-              increment
+        Just (_, endDelim)
+          | endDelim `isPrefixOf` truncated -> do
+            put $ cs { currentDelimiter = mzero }
+            increment
+        Just _ -> increment
         Nothing ->
           case find (finder . fst) cd of
             Just delim -> do
-              put $ cs { currentDelimiter = Just delim }
+              put $ cs { currentDelimiter = return delim }
               increment
             Nothing -> mzero
       where

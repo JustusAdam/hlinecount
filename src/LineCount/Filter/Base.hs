@@ -1,12 +1,9 @@
 module LineCount.Filter.Base where
 
 
-import LineCount.Base
-import LineCount.Profile
-import System.FilePath
-import Data.Foldable
-import Data.Composition
-import Data.List
+import           Data.Function.JAExtra
+import           LineCount.Base
+import           LineCount.Profile
 
 
 {-|
@@ -17,7 +14,7 @@ newtype FileFilter = FileFilter { unFilter :: MainOptions -> [Profile] -> FilePa
 
 
 instance Monoid FileFilter where
-  mempty  = FileFilter (\_ _ _ -> True)
+  mempty  = FileFilter (const3 True)
   mappend (FileFilter func1) (FileFilter func2) = FileFilter newfunc
     where
       newfunc a b c = func1 a b c && func2 a b c

@@ -6,5 +6,5 @@ module LineCount.Profile
   ) where
 
 
-import LineCount.Profile.Base
-import LineCount.Profile.Values
+import           LineCount.Profile.Base
+import           LineCount.Profile.Values
