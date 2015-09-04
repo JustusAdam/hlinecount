@@ -1,3 +1,4 @@
+{-# LANGUAGE UnicodeSyntax #-}
 module LineCount.Counter.Base where
 
 
@@ -12,16 +13,16 @@ import           LineCount.Profile
 
 
 data CounterState = CounterState
-  { currentDelimiter :: Maybe (String, String)
+  { currentDelimiter ∷ Maybe (String, String)
   } deriving (Eq, Show)
 
 
-emptyCS :: CounterState
+emptyCS ∷ CounterState
 emptyCS = CounterState { currentDelimiter = Nothing }
 
 
 newtype Counter = Counter
-  { unCounter :: MainOptions -> Profile -> String -> MaybeT (State CounterState) CalcResult
+  { unCounter ∷ MainOptions → Profile → String → MaybeT (State CounterState) CalcResult
   }
 
 

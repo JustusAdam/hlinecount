@@ -1,3 +1,4 @@
+{-# LANGUAGE UnicodeSyntax #-}
 module Main where
 
 import           Data.Char
@@ -9,15 +10,15 @@ import           LineCount.Profile as P
 import           Options
 
 
-recursiveDefault :: Bool
+recursiveDefault ∷ Bool
 recursiveDefault = True
-ignoredDefaultPaths :: [FilePath]
+ignoredDefaultPaths ∷ [FilePath]
 ignoredDefaultPaths =
   [ ".git/"
   , "build/"
   , "Setup.hs"
   ]
-defaultFiles :: [String]
+defaultFiles ∷ [String]
 defaultFiles = []
 
 
@@ -25,34 +26,34 @@ instance Options MainOptions where
   defineOptions = MainOptions
     <$> defineOption
           optionType_bool
-          (\o -> o { optionLongFlags = ["recursive"]
+          (\o → o { optionLongFlags = ["recursive"]
                    , optionShortFlags = "r"
                    , optionDefault = recursiveDefault
                    , optionDescription = "Scan directories recursively."
                    })
     <*> defineOption
           (optionType_list ',' optionType_string)
-          (\o -> o { optionShortFlags = "i"
+          (\o → o { optionShortFlags = "i"
                    , optionLongFlags = ["ignore"]
                    , optionDescription = "Ignore these paths."
                    , optionDefault = ignoredDefaultPaths
                    })
     <*> defineOption
           (optionType_list ',' optionType_string)
-          (\o -> o { optionShortFlags  = "f"
+          (\o → o { optionShortFlags  = "f"
                    , optionLongFlags   = ["files"]
                    , optionDescription = "Fileextensions to include in the search."
                    , optionDefault     = defaultFiles
                    })
     <*> defineOption
           optionType_bool
-          (\o -> o { optionLongFlags   = ["ignore-hidden"]
+          (\o → o { optionLongFlags   = ["ignore-hidden"]
                    , optionDefault     = True
                    , optionDescription = "Ignore hidden files."
                    })
     <*> defineOption
           (optionType_list ',' optionType_string)
-          (\o -> o { optionShortFlags  = "p"
+          (\o → o { optionShortFlags  = "p"
                    , optionDefault     = []
                    , optionDescription =
                      "Select predefined profiles\n\
@@ -62,14 +63,14 @@ instance Options MainOptions where
                    })
     <*> defineOption
           (optionType_list ',' optionType_string)
-          (\o -> o { optionLongFlags   = ["comment"]
+          (\o → o { optionLongFlags   = ["comment"]
                    , optionShortFlags  = "c"
                    , optionDescription = "Specify comment delimiters"
                    , optionDefault     = []
                    })
 
 
-integrateProfile :: MainOptions -> Profile -> MainOptions
+integrateProfile ∷ MainOptions → Profile → MainOptions
 integrateProfile
   m@(MainOptions { targetExtensions = t })
   (Profile { fileExtensions = fex })
@@ -77,16 +78,16 @@ integrateProfile
   m { targetExtensions = t `union` fex }
 
 
-plur :: Int -> String
+plur ∷ Int → String
 plur i
   | i < 2     = ""
   | otherwise = "s"
 
 
-main :: IO ()
+main ∷ IO ()
 main = runCommand main'
   where
-    main' :: MainOptions -> [FilePath] -> IO ()
+    main' ∷ MainOptions → [FilePath] → IO ()
     main' opts paths = do
       let chosenProfiles = mapMaybe (flip Map.lookup profiles . map toLower) $ selProfiles opts
       print chosenProfiles

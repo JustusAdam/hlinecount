@@ -1,3 +1,4 @@
+{-# LANGUAGE UnicodeSyntax #-}
 module LineCount.Counter.Values where
 
 
@@ -11,11 +12,11 @@ import           LineCount.Counter.Base
 import           LineCount.Profile
 
 
-isEmpty :: String -> Bool
+isEmpty ∷ String → Bool
 isEmpty = all isSpace
 
 
-nonEmptyCounter :: Counter
+nonEmptyCounter ∷ Counter
 nonEmptyCounter = Counter (const2 func)
   where
     func line
@@ -23,7 +24,7 @@ nonEmptyCounter = Counter (const2 func)
       | otherwise    = return $ mempty { nonEmpty = 1 }
 
 
-emptyCounter :: Counter
+emptyCounter ∷ Counter
 emptyCounter = Counter (const2 func)
   where
     func line
@@ -31,7 +32,7 @@ emptyCounter = Counter (const2 func)
       | otherwise    = mzero
 
 
-singleLineCommentCounter :: Counter
+singleLineCommentCounter ∷ Counter
 singleLineCommentCounter = Counter (const func)
   where
     func (Profile { commentDelimiter = dl }) line
@@ -41,31 +42,31 @@ singleLineCommentCounter = Counter (const func)
         isComment = or $ sequenceA (map isPrefixOf dl) $ filter (not . isSpace) line
 
 
-multiLineCommentCounter :: Counter
+multiLineCommentCounter ∷ Counter
 multiLineCommentCounter = Counter (const func)
   where
-    func :: Profile -> String -> MaybeT (State CounterState) CalcResult
+    func ∷ Profile → String → MaybeT (State CounterState) CalcResult
     func (Profile { multiLineCommentDelimiters = cd }) line = do
       cs@(CounterState { currentDelimiter = isInside }) <- get
       case isInside of
         Just (_, endDelim)
-          | endDelim `isPrefixOf` truncated -> do
+          | endDelim `isPrefixOf` truncated → do
             put $ cs { currentDelimiter = mzero }
             increment
-        Just _ -> increment
-        Nothing ->
+        Just _ → increment
+        Nothing →
           case find (finder . fst) cd of
-            Just delim -> do
+            Just delim → do
               put $ cs { currentDelimiter = return delim }
               increment
-            Nothing -> mzero
+            Nothing → mzero
       where
         increment = return $ mempty { commentLines = 1 }
         truncated = dropWhile isSpace line
         finder    = flip isPrefixOf truncated
 
 
-counterChain :: [Counter]
+counterChain ∷ [Counter]
 counterChain =
   [ multiLineCommentCounter
   , singleLineCommentCounter

@@ -1,3 +1,4 @@
+{-# LANGUAGE UnicodeSyntax #-}
 module LineCount.Base
     ( DirTree(..)
     , CalcResult(..)
@@ -8,10 +9,10 @@ module LineCount.Base
 import           Data.Monoid
 
 
-data CalcResult = CalcResult { fileCount    :: Sum Int
-                             , commentLines :: Sum Int
-                             , nonEmpty     :: Sum Int
-                             , emptyLines   :: Sum Int
+data CalcResult = CalcResult { fileCount    ∷ Sum Int
+                             , commentLines ∷ Sum Int
+                             , nonEmpty     ∷ Sum Int
+                             , emptyLines   ∷ Sum Int
                              } deriving (Eq, Show)
 
 
@@ -21,12 +22,12 @@ data DirTree a
   deriving (Eq, Show)
 
 
-data MainOptions = MainOptions { recursive         :: Bool
-                               , ignorePaths       :: [FilePath]
-                               , targetExtensions  :: [String]
-                               , ignoreHidden      :: Bool
-                               , selProfiles       :: [String]
-                               , commentDelimiters :: [String]
+data MainOptions = MainOptions { recursive         ∷ Bool
+                               , ignorePaths       ∷ [FilePath]
+                               , targetExtensions  ∷ [String]
+                               , ignoreHidden      ∷ Bool
+                               , selProfiles       ∷ [String]
+                               , commentDelimiters ∷ [String]
                                } deriving (Eq, Show)
 
 

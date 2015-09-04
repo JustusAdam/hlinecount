@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE UnicodeSyntax  #-}
 
 module LineCount
   ( DirTree(..)
@@ -22,7 +23,7 @@ import           System.Directory
 import           System.FilePath
 
 
-buildTree :: MainOptions -> [Profile] -> FilePath -> IO (Maybe (DirTree ()))
+buildTree ∷ MainOptions → [Profile] → FilePath → IO (Maybe (DirTree ()))
 buildTree
   opts@(MainOptions { recursive = recu })
   chosenProfiles
@@ -45,7 +46,7 @@ buildTree
         isFileAllowed = Filter.isAllowed opts chosenProfiles
 
 
-scanDir :: MainOptions -> [Profile] -> [FilePath] -> IO CalcResult
+scanDir ∷ MainOptions → [Profile] → [FilePath] → IO CalcResult
 scanDir opts selectedProfiles paths = do
   trees    <- catMaybes <$> traverse (buildTree opts selectedProfiles) paths
   print $ foldr ((++) . flattenDT selectedProfiles) [] trees
@@ -54,7 +55,7 @@ scanDir opts selectedProfiles paths = do
   return $ fold $ map fold measured
 
 
-measureTree :: MainOptions -> [Profile] -> DirTree a -> IO (DirTree CalcResult)
+measureTree ∷ MainOptions → [Profile] → DirTree a → IO (DirTree CalcResult)
 measureTree opts profs (Directory name contents) = Directory name <$> mapM (measureTree opts profs) contents
 measureTree opts profs (File name _) =
   File name . maybe (const mempty) (countAll opts) fileProfile . lines <$> readFile name
@@ -62,7 +63,7 @@ measureTree opts profs (File name _) =
     fileProfile = lookup (takeExtension name) (prfsToAssocList profs)
 
 
-flattenDT :: [Profile] -> DirTree a -> [String]
+flattenDT ∷ [Profile] → DirTree a → [String]
 flattenDT p (File name _)
   | extensionAccepted name = return name
   | otherwise = []

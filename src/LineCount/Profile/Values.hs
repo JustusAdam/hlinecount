@@ -1,3 +1,4 @@
+{-# LANGUAGE UnicodeSyntax #-}
 module LineCount.Profile.Values
     ( providedProfiles
     , profiles
@@ -9,7 +10,7 @@ import           LineCount.Profile.Base
 
 
 
-profileHaskell :: Profile
+profileHaskell ∷ Profile
 profileHaskell = mempty { canonicalName    = "Haskell"
                         , fileExtensions   = [".hs", ".lhs"]
                         , commentDelimiter = ["--"]
@@ -17,7 +18,7 @@ profileHaskell = mempty { canonicalName    = "Haskell"
                         }
 
 
-profilePython :: Profile
+profilePython ∷ Profile
 profilePython = mempty { canonicalName    = "Python"
                        , fileExtensions   = [".py"]
                        , commentDelimiter = ["#"]
@@ -25,7 +26,7 @@ profilePython = mempty { canonicalName    = "Python"
                        }
 
 
-profileJava :: Profile
+profileJava ∷ Profile
 profileJava = mempty { canonicalName    = "Java"
                      , fileExtensions   = [".java"]
                      , commentDelimiter = ["//"]
@@ -33,7 +34,7 @@ profileJava = mempty { canonicalName    = "Java"
                      }
 
 
-profileC :: Profile
+profileC ∷ Profile
 profileC = mempty { canonicalName    = "C"
                   , fileExtensions   = [".c", ".h"]
                   , commentDelimiter = ["//"]
@@ -41,7 +42,7 @@ profileC = mempty { canonicalName    = "C"
                   }
 
 
-profileCsharp :: Profile
+profileCsharp ∷ Profile
 profileCsharp = mempty { canonicalName    = "C#"
                        , fileExtensions   = [".cs"]
                        , commentDelimiter = ["//"]
@@ -49,7 +50,7 @@ profileCsharp = mempty { canonicalName    = "C#"
                        }
 
 
-profileCPP :: Profile
+profileCPP ∷ Profile
 profileCPP = mempty { canonicalName    = "C++"
                     , fileExtensions   = [".cpp", ".h", ".hpp", ".c++"]
                     , commentDelimiter = ["//"]
@@ -57,7 +58,7 @@ profileCPP = mempty { canonicalName    = "C++"
                     }
 
 
-profileFsharp :: Profile
+profileFsharp ∷ Profile
 profileFsharp = mempty { canonicalName    = "F#"
                        , fileExtensions   = [".fs", ".fsi"]
                        , commentDelimiter = ["--"]
@@ -65,7 +66,7 @@ profileFsharp = mempty { canonicalName    = "F#"
                        }
 
 
-profileElm :: Profile
+profileElm ∷ Profile
 profileElm = mempty { canonicalName    = "Elm"
                     , fileExtensions   = [".elm"]
                     , commentDelimiter = ["--"]
@@ -74,7 +75,7 @@ profileElm = mempty { canonicalName    = "Elm"
 
 
 
-__all :: [Profile]
+__all ∷ [Profile]
 __all =
   [ profileHaskell
   , profilePython
@@ -87,9 +88,9 @@ __all =
   ]
 
 
-providedProfiles :: [String]
+providedProfiles ∷ [String]
 providedProfiles = map canonicalName __all
 
 
-profiles :: Map.Map String Profile
+profiles ∷ Map.Map String Profile
 profiles = Map.fromList $ prfsToAssocList __all

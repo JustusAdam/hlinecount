@@ -1,3 +1,4 @@
+{-# LANGUAGE UnicodeSyntax #-}
 module LineCount.Filter.Base where
 
 
@@ -13,7 +14,7 @@ import           LineCount.Profile
   Represents a single step in the filter chain for files.
   Filters are '&&' chained, thus if one of them rejects the filename it is not scanned.
 -}
-newtype FileFilter = FileFilter { unFilter :: MainOptions -> [Profile] -> FilePath -> Bool }
+newtype FileFilter = FileFilter { unFilter ∷ MainOptions → [Profile] → FilePath → Bool }
 
 
 instance Monoid FileFilter where

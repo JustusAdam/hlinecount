@@ -19,15 +19,15 @@ emptyOpts = MainOptions True [] [] True [] []
 emptyProfile = mempty
 
 
-testAFilter :: FileFilter -> MainOptions -> [Profile] -> FilePath -> Bool
+testAFilter ∷ FileFilter → MainOptions → [Profile] → FilePath → Bool
 testAFilter = unFilter
 
 
-testAFilterWithEmpty :: FileFilter -> FilePath -> Bool
+testAFilterWithEmpty ∷ FileFilter → FilePath → Bool
 testAFilterWithEmpty f = testAFilter f emptyOpts []
 
 
-filtersSpec :: Spec
+filtersSpec ∷ Spec
 filtersSpec = do
 
   describe "[function] hiddenFilter" $ do
@@ -71,15 +71,15 @@ filtersSpec = do
       testFunc "/some/path/.file" `shouldBe` True
 
 
-testACounter :: Counter -> MainOptions -> Profile -> CounterState -> String -> Maybe CalcResult
+testACounter ∷ Counter → MainOptions → Profile → CounterState → String → Maybe CalcResult
 testACounter c opts profile state input = runMaybeT (unCounter c opts profile input) `evalState` state
 
 
-testACounterWEmpty :: Counter -> String -> Maybe CalcResult
+testACounterWEmpty ∷ Counter → String → Maybe CalcResult
 testACounterWEmpty c = testACounter c emptyOpts emptyProfile emptyCS
 
 
-countersSpec :: Spec
+countersSpec ∷ Spec
 countersSpec = do
 
   let codeline    = Just (mempty { nonEmpty = 1 })
@@ -163,7 +163,7 @@ countersSpec = do
       testFunc "ejkn#ejnv" `shouldBe` codeline
 
 
-main :: IO ()
+main ∷ IO ()
 main = hspec $ do
   countersSpec
   filtersSpec

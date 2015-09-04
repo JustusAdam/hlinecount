@@ -1,3 +1,4 @@
+{-# LANGUAGE UnicodeSyntax #-}
 module LineCount.Filter.Values where
 
 
@@ -10,7 +11,7 @@ import           LineCount.Filter.Base
 import           System.FilePath
 
 
-hiddenFilter :: FileFilter
+hiddenFilter ∷ FileFilter
 hiddenFilter = FileFilter func
   where
     func (MainOptions { ignoreHidden = hidden })
@@ -18,20 +19,20 @@ hiddenFilter = FileFilter func
       | otherwise = const2 True
 
 
-sameFolderFilter :: FileFilter
+sameFolderFilter ∷ FileFilter
 sameFolderFilter = FileFilter func
   where
     func = const2 $ flip notElem [".", ".."] . takeFileName
 
 
-optsFilter :: FileFilter
+optsFilter ∷ FileFilter
 optsFilter = FileFilter func
   where
     func (MainOptions { ignorePaths = ip}) =
       const $ and . sequenceA (map (not .: isSubsequenceOf) ip)
 
 
-filterChain :: [FileFilter]
+filterChain ∷ [FileFilter]
 filterChain =
   [ optsFilter
   , sameFolderFilter
@@ -39,5 +40,5 @@ filterChain =
   ]
 
 
-fileFilter :: FileFilter
+fileFilter ∷ FileFilter
 fileFilter = fold filterChain
