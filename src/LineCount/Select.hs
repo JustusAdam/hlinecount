@@ -2,9 +2,12 @@ module LineCount.Select
   ( selectProfile
   ) where
 
+import           Control.Arrow
 import           Control.Monad
 import           Data.Foldable
+import           Data.Function
 import           Data.Function.JAExtra
+import           Data.Tuple.JAExtra
 import           LineCount.Base
 import           LineCount.Profile.Base
 import           System.FilePath
@@ -21,7 +24,7 @@ instance Monoid Selector where
   mempty = Selector (const3 Nothing)
   mappend (Selector s1) (Selector s2) = Selector newfunc
     where
-      newfunc opts profs path = s1 opts profs path `mplus` s2 opts profs path
+      newfunc = curry3 (uncurry mplus . ((&&&) `on` uncurry3) s1 s2)
 
 
 defaultSelector :: Selector

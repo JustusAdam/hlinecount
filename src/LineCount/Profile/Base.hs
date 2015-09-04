@@ -29,4 +29,4 @@ instance Monoid Profile where
 
 
 prfsToAssocList :: [Profile] -> [(String, Profile)]
-prfsToAssocList = join . map (map <$> (&&&) id . const <*> acceptedNames)
+prfsToAssocList = join . map (map <$> (id &&&) . const <*> acceptedNames)

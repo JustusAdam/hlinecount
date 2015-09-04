@@ -1,7 +1,10 @@
 module LineCount.Filter.Base where
 
 
+import           Control.Arrow
+import           Data.Function
 import           Data.Function.JAExtra
+import           Data.Tuple.JAExtra
 import           LineCount.Base
 import           LineCount.Profile
 
@@ -17,4 +20,4 @@ instance Monoid FileFilter where
   mempty  = FileFilter (const3 True)
   mappend (FileFilter func1) (FileFilter func2) = FileFilter newfunc
     where
-      newfunc a b c = func1 a b c && func2 a b c
+      newfunc = curry3 (uncurry (&&) . ((&&&) `on` uncurry3) func1 func2)

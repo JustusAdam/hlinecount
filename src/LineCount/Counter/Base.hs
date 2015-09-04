@@ -1,9 +1,12 @@
 module LineCount.Counter.Base where
 
 
+import           Control.Arrow
 import           Control.Monad.State.Lazy
 import           Control.Monad.Trans.Maybe
+import           Data.Function
 import           Data.Function.JAExtra
+import           Data.Tuple.JAExtra
 import           LineCount.Base
 import           LineCount.Profile
 
@@ -26,4 +29,4 @@ instance Monoid Counter where
   mempty = Counter (const3 mzero)
   mappend (Counter func1) (Counter func2) = Counter newfunc
     where
-      newfunc opts profile input = func1 opts profile input `mplus` func2 opts profile input
+      newfunc = curry3 (uncurry mplus . ((&&&) `on` uncurry3) func1 func2)
